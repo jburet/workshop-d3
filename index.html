@@ -8,6 +8,7 @@
 </head>
 <body>
   <div id="my-dataviz"/>
+  <div id="my-dataviz-2"/>
 </body>
 
 <style>
@@ -18,6 +19,39 @@
 
   .carto_label{
   	font: 18px sans-serif;
+  }
+
+  .axis_y{
+    font: 16px sans-serif;
+  }
+  .axis_y path,
+  .axis_y line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .axis_x{
+    font: 16px sans-serif;
+  }
+  .axis_x path,
+	.axis_x line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+  .grid .tick {
+	    stroke: lightgrey;
+	    opacity: 1;
+	}
+
+	.grid path {
+	    stroke-width: 0;
+	}
+
+  .bar{
+    stroke: black;
   }
 </style>
 
@@ -116,7 +150,70 @@ var carto = function(container){
           .call(zoom);
       }
 }
-carto('#my-dataviz')
+
+
+var distrib = function(container){
+  var margin = {top: 50, right: 50, bottom: 100, left: 100},
+	    width = 800 - margin.left - margin.right,
+	    height = 400 - margin.top - margin.bottom;
+
+  var svg = d3.select(container).append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom)
+	  .append("g")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+  d3.csv("data/csv/abstention.csv", function(error, data){
+
+  var quantize = d3.scale.quantize().domain([0,100]).range(d3.range(0,100,5))
+  var quantizeColor = d3.scale.quantize().domain([0,100]).range(colorbrewer.YlOrRd[9])
+  var histo = d3.map()
+  data.forEach(function(entry) {
+    var key = quantize((parseInt(entry.ab)*100/parseInt(entry.ins)))
+    if(!histo.has(key)){
+      histo.set(key, 0)
+    }
+    histo.set(key, histo.get(key)+1)
+  });
+
+  var y = d3.scale.linear().range([height,0]);
+  y.domain([0, d3.max(histo.values())]);
+  var axey = d3.svg.axis().scale(y).orient('left');
+  svg.append('g').attr('class', 'axis_y').call(axey).append('text').attr('transform', 'rotate(-90)').attr('y', 6).attr('dy', '0.8em').style('text-anchor', 'end').text('Abstention')
+
+  var x = d3.scale.ordinal().rangeRoundBands([0,width]);
+  console.log(histo.keys())
+  x.domain(histo.keys().sort(function(a,b){return a-b}));
+  var axex = d3.svg.axis().scale(x).orient('bottom');
+  var xaxis = svg.append('g').attr('class', 'axis_x').attr('transform', 'translate(0,' + height + ')').call(axex);
+  xaxis.selectAll('text').style('text-anchor', 'end').attr('dx', '-.8em').attr('dy', '.15em').attr('transform', function () {
+    return 'rotate(-60)';
+  });
+
+  var ygrid = d3.svg.axis().scale(y).orient('left');
+  svg.append('g').attr('class', 'grid').call(ygrid.tickSize(-width, 0, 0).tickFormat(''));
+
+
+
+  svg.selectAll('.bar').data(histo.keys())
+  .enter().append('rect')
+  .style('fill', function(d){return quantizeColor(d)})
+  .attr('class', 'bar')
+  .attr('x', function (d) {
+      return x(d);
+  })
+  .attr('width', x.rangeBand())
+  .attr('y', function (d) {
+      return y(histo.get(d));
+  })
+  .attr('height', function (d) {
+      return height - y(histo.get(d));
+  });
+  })
+}
+
+distrib('#my-dataviz-2')
+
 
 </script>
 </html>
