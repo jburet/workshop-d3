@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+  <script src="lib/js/d3.v3.min.js"></script>
+  <script src="lib/js/queue.v1.min.js"></script>
+  <script src="lib/js/colorbrewer.js"></script>
+</head>
+<body>
+  <div id="my-dataviz"/>
+</body>
+
+<style>
+  .overlay {
+    fill: none;
+    pointer-events: all;
+  }
+
+  .carto_label{
+  	font: 18px sans-serif;
+  }
+</style>
+
+<script>
+
+
+var carto = function(container){
+  var margin = {top: 10, right: 10, bottom: 10, left: 10},
+      width = 700 - margin.left - margin.right,
+      height = 700 - margin.top - margin.bottom;
+
+      var svg = d3.select(container).append("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+      var colorScale = colorbrewer.RdYlGn[5]
+      var absDomain = [0, 0.17, 0.23, 0.28, 0.38, 0.68]
+      //var absDomain = [0.68,0.5, 0.38, 0.28, 0.23, 0.17]
+      /*var color = d3.scale.ordinal()
+        .domain(0,68, 0)
+        .range(colorbrewer.RdYlGn[9]);*/
+        color = d3.scale.linear()
+                .domain(absDomain)
+                .range(colorScale);
+      var path = d3.geo.path()
+      var projection = d3.geo.conicConformal() // Lambert-93
+          .center([2.454071, 47.279229]) // On centre la carte sur la France
+          .scale(3800)
+          .translate([width / 2, height / 2]);
+
+      path.projection(projection);
+
+
+      var deps = svg
+        .append("g")
+        .attr("id", "abs");
+
+      var abs = d3.map()
+      queue()
+        .defer(d3.json, "data/json/COMMUNE.json" )
+        .defer(d3.csv, "data/csv/abstention.csv", function(d) { abs.set(d.id, d); })
+        .await(ready)
+
+     svg.selectAll('scale').data(colorScale)
+     .enter()
+     .append('rect')
+       .attr('x', function(d,i){return 10})
+       .attr('y', function(d,i){return (height-margin.bottom-150) - ((i*30)+10)})
+       .attr('width', 20)
+       .attr('height', 20)
+       .style('fill', function(d){return d})
+       .style('stroke', 'black')
+       .on("mouseover", overfunction)
+
+    svg.selectAll('scale').data(colorScale)
+      .enter()
+      .append('text')
+        .attr('class', 'carto_label')
+        .attr('x', function(d,i){return 40})
+        .attr('y', function(d,i){return (height-margin.bottom-133) - ((i*30)+10)})
+        .text(function(d,i){return (absDomain[i]*100).toFixed(0) + ' % - '+(absDomain[i+1]*100).toFixed(0)+' %'})
+
+     function overfunction(){
+
+     }
+
+     function ready(error, root) {
+        var zoom = d3.behavior.zoom()
+          .translate([0, 0])
+          .scale(1)
+          .scaleExtent([1, 16])
+          .on("zoom", zoomed);
+
+        function zoomed() {
+          deps.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+          //features.select(".state-border").style("stroke-width", 1.5 / d3.event.scale + "px");
+          //features.select(".county-border").style("stroke-width", .5 / d3.event.scale + "px");
+        }
+
+        deps.selectAll("path")
+          .data(root.features)
+          .enter().append("path")
+          .attr('fill', function(d) {
+                var c = abs.get(d.properties.INSEE_COM)
+                if(c){
+                  return color(c.ab/c.ins);
+                }
+                return "black"
+            })
+          .attr("d", path)
+
+        svg.append("rect")
+          .attr("class", "overlay")
+          .attr("width", width)
+          .attr("height", height)
+          .call(zoom);
+      }
+}
+carto('#my-dataviz')
+
+</script>
+</html>
