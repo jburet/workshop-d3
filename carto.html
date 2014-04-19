@@ -56,6 +56,7 @@
 
 <script>
 
+var TODO = undefined
 
 var carto = function(container){
   // Define some var for dimension and margin
@@ -72,9 +73,7 @@ var carto = function(container){
   // https://github.com/mbostock/d3/wiki/Quantitative-Scales#linear
   var colorScale = colorbrewer.RdYlGn[5]
   var absDomain = [0, 0.17, 0.23, 0.28, 0.38, 0.68]
-  color = d3.scale.linear()
-          .domain(absDomain)
-          .range(colorScale);
+  var color = TODO
 
   // Create a geo path
   // https://github.com/mbostock/d3/wiki/Geo-Paths#path
@@ -83,12 +82,8 @@ var carto = function(container){
   // Center map (2.454071, 47.279229)
   // define a scale (3800)
   // and translate map
-  var path = d3.geo.path()
-  var projection = d3.geo.conicConformal() // Lambert-93
-      .center([2.454071, 47.279229]) // On centre la carte sur la France
-      .scale(3800)
-      .translate([width / 2, height / 2]);
-  path.projection(projection);
+  var path = TODO
+  var projection = TODO
 
   // create a map
   var abs = d3.map()
@@ -103,57 +98,20 @@ var carto = function(container){
 
       // 1. Map data to path
       // 2. Use root.features as data
-      // 3. add a fill function for coloring cities
-      var deps =
-      svg.append("g")
-        .attr("id", "abs")
-
-      deps.selectAll("path")
-        .data(root.features)
-        .enter().append("path")
-        .attr('fill', function(d) {
-              var c = abs.get(d.properties.INSEE_COM)
-              if(c){
-                return color(c.ab/c.ins);
-              }
-              return "black"
-          })
-        .attr("d", path)
+      // 3. add a fill function for coloring cities. Find abstention in abstention dataset, use properties.INSEE_COM
+      var comm = TODO
 
         // Create legend
         // 1. Use selector and enter() on color scale data. Foreach color append a rect
-         svg.selectAll('scale').data(colorScale)
-         .enter()
-         .append('rect')
-           .attr('x', function(d,i){return 10})
-           .attr('y', function(d,i){return (height-margin.bottom-150) - ((i*30)+10)})
-           .attr('width', 20)
-           .attr('height', 20)
-           .style('fill', function(d){return d})
-           .style('stroke', 'black')
+
 
         // 2. Create text
-        svg.selectAll('scale').data(colorScale)
-          .enter()
-          .append('text')
-            .attr('class', 'carto_label')
-            .attr('x', function(d,i){return 40})
-            .attr('y', function(d,i){return (height-margin.bottom-133) - ((i*30)+10)})
-            .text(function(d,i){return (absDomain[i]*100).toFixed(0) + ' % - '+(absDomain[i+1]*100).toFixed(0)+' %'})
 
 
        // Optionnal: Add zoom and translate behavior
        // https://github.com/mbostock/d3/wiki/Zoom-Behavior#zoom
-       var zoom = d3.behavior.zoom()
-         .translate([0, 0])
-         .scale(1)
-         .scaleExtent([1, 16])
-         .on("zoom", zoomed);
-
-       function zoomed() {
-         deps.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-       }
-
+       var zoom = TODO
+}
        // Use this overlay manager zoom event
        svg.append("rect")
          .attr("class", "overlay")

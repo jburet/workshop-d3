@@ -56,6 +56,7 @@
 
 <script>
 
+var TODO = undefined
 
 var distrib = function(container){
   // Declare size and margin
@@ -75,9 +76,7 @@ var distrib = function(container){
 
 
   // (optionnal) Create scale for color
-  //var quantizeColor = d3.scale.quantize().domain([0,100]).range(colorbrewer.YlOrRd[9])
-  var quantizeColor = d3.scale.linear().domain([0,60]).interpolate(d3.interpolateRgb).range([colorbrewer.YlOrRd[4][0],colorbrewer.YlOrRd[4][3]] )
-
+  //var quantizeColor = TODO
 
   // Discretize data
 
@@ -92,15 +91,8 @@ var distrib = function(container){
   // https://github.com/mbostock/d3/wiki/Quantitative-Scales#quantize
   // https://github.com/mbostock/d3/wiki/Arrays#d3_map
 
-  var quantize = d3.scale.quantize().domain([0,100]).range(d3.range(0,100,5))
-  var histo = d3.map()
-  data.forEach(function(entry) {
-    var key = quantize((parseInt(entry.ab)*100/parseInt(entry.ins)))
-    if(!histo.has(key)){
-      histo.set(key, 0)
-    }
-    histo.set(key, histo.get(key)+1)
-  });
+  var quantize = TODO
+  var histo = TODO
 
   // create scale x and y
   // linear scale for y axis
@@ -108,47 +100,25 @@ var distrib = function(container){
   // See doc API
   // https://github.com/mbostock/d3/wiki/Quantitative-Scales#linear
   // https://github.com/mbostock/d3/wiki/Ordinal-Scales#ordinal
-  var y = d3.scale.linear().range([height,0]);
-  y.domain([0, d3.max(histo.values())]);
-  var x = d3.scale.ordinal().rangeRoundBands([0,width]);
-  x.domain(histo.keys().sort(function(a,b){return a-b}));
+  var y = TODO
+  var x = TODO
 
   // Display axis
   // https://github.com/mbostock/d3/wiki/SVG-Axes#axis
   // Use axis_y and axis_x css classes
-  var axey = d3.svg.axis().scale(y).orient('left');
-  svg.append('g').attr('class', 'axis_y').call(axey).append('text').attr('transform', 'rotate(-90)').attr('y', 6).attr('dy', '0.8em').style('text-anchor', 'end').text('Abstention')
+  var axey = TODO
 
-  var axex = d3.svg.axis().scale(x).orient('bottom');
-  var xaxis = svg.append('g').attr('class', 'axis_x').attr('transform', 'translate(0,' + height + ')').call(axex);
-  xaxis.selectAll('text').style('text-anchor', 'end').attr('dx', '-.8em').attr('dy', '.15em').attr('transform', function () {
-    return 'rotate(-60)';
-  });
+  var axex = TODO
 
   // Optional display grid
   // Use grid css class
-  var ygrid = d3.svg.axis().scale(y).orient('left');
-  svg.append('g').attr('class', 'grid').call(ygrid.tickSize(-width, 0, 0).tickFormat(''));
+  var ygrid = TODO
 
   // Map data to bar
   // 1. x,y origin is left, top
   // 2. See example http://bl.ocks.org/mbostock/3885304
   // 3. use 'bar' css class
-  svg.selectAll('.bar').data(histo.keys())
-  .enter().append('rect')
-  .style('fill', function(d){return quantizeColor(d)})
-  .attr('class', 'bar')
-  .attr('x', function (d) {
-      return x(d);
-  })
-  .attr('width', x.rangeBand())
-  .attr('y', function (d) {
-      return y(histo.get(d));
-  })
-  .attr('height', function (d) {
-      return height - y(histo.get(d));
-  });
-  })
+  
 }
 
 distrib('#my-dataviz')
